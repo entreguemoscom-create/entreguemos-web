@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entreguemos - Tu Solución en Logística y Mensajería</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandBlue: '#0084C8',
+                        brandBlueHover: '#006CA5',
+                        brandLightBlue: '#38bdf8',
+                        brandDark: '#0b132b',
+                        brandAccent: '#1c2541'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .active-tab {
+            color: #FFFFFF !important;
+            border-bottom: 3px solid #FFFFFF;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col justify-between">
+
+    <!-- ENCABEZADO / NAVBAR -->
+    <header class="bg-brandBlue shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <!-- Logo y Nombre -->
+            <div class="flex items-center space-x-3 cursor-pointer shrink-0" onclick="switchTab('inicio')">
+                <img id="header-logo" src="https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/entreguemos-web-l5ikt1/assets/45uegxloonwf/Logo_pidee_(51).png" alt="Entreguemos Logo" class="h-16 w-auto object-contain ">
+                <span class="text-2xl font-black text-white tracking-tight">Entreguemos</span>
+            </div>
+
+            <!-- Menú + Botón Iniciar Sesión + Bandera -->
+            <div class="flex items-center justify-end space-x-6 sm:space-x-8 w-full">
+                <nav class="hidden md:flex space-x-6 text-sm font-semibold">
+                    <button onclick="switchTab('inicio')" id="nav-inicio" class="nav-btn py-2 text-blue-100 hover:text-white active-tab transition">Inicio</button>
+                    <button onclick="switchTab('quienes-somos')" id="nav-quienes-somos" class="nav-btn py-2 text-blue-100 hover:text-white transition">Quiénes Somos</button>
+                    <button onclick="switchTab('registra-mensajeria')" id="nav-registra-mensajeria" class="nav-btn py-2 text-blue-100 hover:text-white transition">Registra tu Mensajería</button>
+                </nav>
+
+                <!-- Acciones Derecha -->
+                <div class="flex items-center space-x-4">
+                    <button onclick="switchTab('iniciar-sesion')" id="nav-iniciar-sesion" class="flex items-center space-x-2 bg-white hover:bg-slate-100 text-[#0084C8] font-bold px-5 py-2.5 rounded-full text-sm shadow-md transition">
+                        <i class="fa-solid fa-user text-xs text-[#0084C8]"></i>
+                        <span class="text-[#0084C8]">Iniciar Sesión</span>
+                    </button>
+
+                    <div class="flex items-center space-x-1.5 pl-2 border-l border-blue-400/50">
+                        <svg class="w-6 h-4 rounded-sm shadow-sm" viewBox="0 0 900 600">
+                            <rect width="900" height="300" fill="#FCD116"/>
+                            <rect y="300" width="900" height="150" fill="#003893"/>
+                            <rect y="450" width="900" height="150" fill="#CE1126"/>
+                        </svg>
+                        <span class="text-xs font-bold text-white">CO</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main id="main-content" class="flex-grow">
+
+        <!-- ================= SECCIÓN 1: INICIO ================= -->
+        <div id="tab-inicio" class="tab-content">
+            
+            <!-- Hero Banner: 85vh -->
+            <section class="relative w-full h-[85vh] overflow-hidden bg-slate-900">
+                <img id="img-hero" src="https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/entreguemos-web-l5ikt1/assets/1eb5mycwkr7a/Gemini_Generated_Image_z0n66wz0n66wz0n6.png" class="w-full h-full object-cover">
+            </section>
+
+            <!-- SECCIÓN DEGRADADO AZUL CON MÉTRICAS Y BENEFICIOS -->
+            <section class="bg-gradient-to-b from-slate-950 via-slate-900 to-blue-950 py-16 px-6 text-white border-b border-slate-800/60">
+                <div class="max-w-7xl mx-auto space-y-16">
+                    
+                    <!-- BARRA DE ESTADÍSTICAS EN AZUL -->
+                    <div class="bg-slate-900/80 backdrop-blur-md border border-slate-700/60 rounded-2xl p-6 sm:p-8 shadow-2xl">
+                        <div class="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-slate-700/60 text-center gap-4 md:gap-0">
+                            <div class="py-4 md:py-0 md:px-4 flex flex-col items-center justify-center">
+                                <span class="text-3xl sm:text-4xl font-black text-brandLightBlue tracking-tight">63+</span>
+                                <span class="text-xs uppercase font-semibold text-slate-400 mt-2 tracking-wider">Mensajerías Activas</span>
+                            </div>
+                            <div class="py-4 md:py-0 md:px-4 flex flex-col items-center justify-center">
+                                <span class="text-3xl sm:text-4xl font-black text-brandLightBlue tracking-tight">650+</span>
+                                <span class="text-xs uppercase font-semibold text-slate-400 mt-2 tracking-wider">Repartidores</span>
+                            </div>
+                            <div class="py-4 md:py-0 md:px-4 flex flex-col items-center justify-center">
+                                <span class="text-3xl sm:text-4xl font-black text-brandLightBlue tracking-tight">4</span>
+                                <span class="text-xs uppercase font-semibold text-slate-400 mt-2 tracking-wider">Ciudades</span>
+                            </div>
+                            <div class="py-4 md:py-0 md:px-4 flex flex-col items-center justify-center">
+                                <span class="text-3xl sm:text-4xl font-black text-brandLightBlue tracking-tight">2</span>
+                                <span class="text-xs uppercase font-semibold text-slate-400 mt-2 tracking-wider">Años</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ¿POR QUÉ UNIRSE A ENTREGUEMOS? -->
+                    <div class="space-y-10">
+                        <div class="text-left space-y-2">
+                            <span class="text-brandLightBlue text-xs font-bold uppercase tracking-widest">Beneficios exclusivos</span>
+                            <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">¿Por qué unirse a Entreguemos?</h2>
+                            <p class="text-slate-400 text-sm max-w-2xl">Conectamos tus servicios de mensajería con la red de clientes más grande de la región mediante tecnología de punta.</p>
+                        </div>
+
+                        <!-- Tarjetas Dark Mode con Acentos Azules -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <div class="bg-slate-900/60 backdrop-blur-md p-6 rounded-2xl border border-slate-800 hover:border-slate-700 transition flex flex-col space-y-4">
+                                <div class="w-12 h-12 bg-blue-600/20 rounded-xl flex items-center justify-center text-brandLightBlue text-xl">
+                                    <i class="fa-solid fa-chart-line"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-white">Más pedidos y entregas</h3>
+                                <p class="text-slate-400 text-sm leading-relaxed">Entreguemos es el punto de encuentro entre tú y tus clientes potenciales, ampliando tu alcance mediante tecnología eficiente.</p>
+                            </div>
+                            <div class="bg-slate-900/60 backdrop-blur-md p-6 rounded-2xl border border-slate-800 hover:border-slate-700 transition flex flex-col space-y-4">
+                                <div class="w-12 h-12 bg-blue-600/20 rounded-xl flex items-center justify-center text-brandLightBlue text-xl">
+                                    <i class="fa-solid fa-shield-halved"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-white">Inscripción de riesgo cero</h3>
+                                <p class="text-slate-400 text-sm leading-relaxed">Sin costes ocultos de inscripción. Transparencia total y acompañamiento desde el primer día para potenciar tu red.</p>
+                            </div>
+                            <div class="bg-slate-900/60 backdrop-blur-md p-6 rounded-2xl border border-slate-800 hover:border-slate-700 transition flex flex-col space-y-4">
+                                <div class="w-12 h-12 bg-blue-600/20 rounded-xl flex items-center justify-center text-brandLightBlue text-xl">
+                                    <i class="fa-solid fa-sliders"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-white">Repartos a medida</h3>
+                                <p class="text-slate-400 text-sm leading-relaxed">Nuestros servicios de mensajería express y logística se adaptan exactamente a las necesidades específicas de tu empresa.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- LO QUE INCLUYE NUESTRO SERVICIO -->
+            <section class="py-16 bg-slate-900 text-slate-100 border-b border-slate-800">
+                <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
+                    <div class="md:col-span-7 space-y-6">
+                        <h2 class="text-3xl font-bold text-white">Lo que incluye nuestro servicio</h2>
+                        <ul class="space-y-4 text-slate-300">
+                            <li class="flex items-start"><i class="fa-solid fa-circle-check text-brandLightBlue text-xl mr-3 mt-0.5"></i> Plataforma digital para gestión de envíos en tiempo real.</li>
+                            <li class="flex items-start"><i class="fa-solid fa-circle-check text-brandLightBlue text-xl mr-3 mt-0.5"></i> Asignación inteligente de mensajeros cercanos a tu ubicación.</li>
+                            <li class="flex items-start"><i class="fa-solid fa-circle-check text-brandLightBlue text-xl mr-3 mt-0.5"></i> Panel de control para análisis de pedidos y fidelización de clientes.</li>
+                            <li class="flex items-start"><i class="fa-solid fa-circle-check text-brandLightBlue text-xl mr-3 mt-0.5"></i> Soporte y asistencia técnica personalizada de expertos.</li>
+                            <li class="flex items-start"><i class="fa-solid fa-circle-check text-brandLightBlue text-xl mr-3 mt-0.5"></i> Tarifas competitivas y esquemas de comisiones preferenciales.</li>
+                        </ul>
+                        <button onclick="switchTab('registra-mensajeria')" class="mt-4 bg-brandBlue hover:bg-brandBlueHover text-white px-8 py-3 rounded-full font-bold text-sm shadow-lg transition">
+                            Únete a nosotros ahora
+                        </button>
+                    </div>
+                    <div class="md:col-span-5 flex justify-center">
+                        <img id="img-servicio" src="https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/entreguemos-web-l5ikt1/assets/dmgn7xlby2ac/Dise%C3%B1o_sin_t%C3%ADtulo_(5)_(1).png" alt="Servicio Entreguemos" class="rounded-2xl w-full max-w-md object-cover">
+                    </div>
+                </div>
+            </section>
+
+            <!-- CÓMO EMPEZAR A TRABAJAR (NUEVO DISEÑO HORIZONTAL TIPO PROCESO) -->
+            <section class="py-20 px-6 max-w-7xl mx-auto space-y-12">
+                <div class="text-left space-y-3">
+                    <span class="text-brandLightBlue text-xs font-bold uppercase tracking-widest">Proceso</span>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">¿Cómo empezar a trabajar?</h2>
+                    <p class="text-slate-400 text-sm max-w-xl">Un proceso claro, predecible y transparente. Sin sorpresas.</p>
+                </div>
+
+                <!-- Contenedor con línea conectora -->
+                <div class="relative border-t border-slate-800/80 pt-10">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8">
+                        
+                        <!-- Paso 1 -->
+                        <div class="relative space-y-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-brandLightBlue text-lg font-bold shadow-inner">
+                                    <i class="fa-solid fa-user-plus"></i>
+                                </div>
+                                <span class="text-5xl font-black text-slate-800 select-none">01</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-white mb-1">Registrarte</h3>
+                                <p class="text-slate-400 text-xs leading-relaxed">Completa el formulario inicial con los datos de tu empresa o perfil independiente.</p>
+                            </div>
+                        </div>
+
+                        <!-- Paso 2 -->
+                        <div class="relative space-y-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-brandLightBlue text-lg font-bold shadow-inner">
+                                    <i class="fa-solid fa-headset"></i>
+                                </div>
+                                <span class="text-5xl font-black text-slate-800 select-none">02</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-white mb-1">Contacto</h3>
+                                <p class="text-slate-400 text-xs leading-relaxed">Nuestro equipo validará tu información y se pondrá en contacto contigo en breve.</p>
+                            </div>
+                        </div>
+
+                        <!-- Paso 3 -->
+                        <div class="relative space-y-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-brandLightBlue text-lg font-bold shadow-inner">
+                                    <i class="fa-solid fa-id-card"></i>
+                                </div>
+                                <span class="text-5xl font-black text-slate-800 select-none">03</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-white mb-1">Perfilación</h3>
+                                <p class="text-slate-400 text-xs leading-relaxed">Configuramos tus accesos y credenciales personalizadas a la plataforma.</p>
+                            </div>
+                        </div>
+
+                        <!-- Paso 4 -->
+                        <div class="relative space-y-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-brandLightBlue text-lg font-bold shadow-inner">
+                                    <i class="fa-solid fa-chalkboard-user"></i>
+                                </div>
+                                <span class="text-5xl font-black text-slate-800 select-none">04</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-white mb-1">Capacitación</h3>
+                                <p class="text-slate-400 text-xs leading-relaxed">Recibe una breve orientación sobre el uso dinámico y optimizado de la Web App.</p>
+                            </div>
+                        </div>
+
+                        <!-- Paso 5 -->
+                        <div class="relative space-y-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-brandLightBlue text-lg font-bold shadow-inner">
+                                    <i class="fa-solid fa-rocket"></i>
+                                </div>
+                                <span class="text-5xl font-black text-slate-800 select-none">05</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-white mb-1">¡A trabajar!</h3>
+                                <p class="text-slate-400 text-xs leading-relaxed">Comienza a recibir, administrar y completar tus entregas de forma inmediata.</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ================= SECCIÓN 2: INICIAR SESIÓN ================= -->
+        <div id="tab-iniciar-sesion" class="tab-content hidden min-h-[600px] bg-slate-900">
+            <div class="grid grid-cols-1 md:grid-cols-12 min-h-[650px]">
+                <div class="md:col-span-5 bg-slate-950 p-8 flex items-center justify-center border-r border-slate-800">
+                    <div class="bg-slate-900 p-8 rounded-3xl shadow-2xl w-full max-w-sm text-center space-y-6 border border-slate-800">
+                        <img src="https://i.ibb.co/L5w2R77/Logo-pidee-51.png" alt="Logo" class="h-16 mx-auto brightness-0 invert">
+                        <h3 class="text-xl font-bold text-white">Acceso a Mensajerías</h3>
+                        <form class="space-y-4 text-left">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 mb-1">Número de teléfono</label>
+                                <input type="tel" placeholder="Número de teléfono" class="w-full px-4 py-2.5 rounded-full bg-slate-800 border border-slate-700 text-white focus:ring-2 focus:ring-brandBlue focus:outline-none text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 mb-1">Contraseña</label>
+                                <div class="relative">
+                                    <input type="password" placeholder="Contraseña" class="w-full px-4 py-2.5 rounded-full bg-slate-800 border border-slate-700 text-white focus:ring-2 focus:ring-brandBlue focus:outline-none text-sm">
+                                    <i class="fa-regular fa-eye-slash absolute right-4 top-3.5 text-slate-500 cursor-pointer"></i>
+                                </div>
+                            </div>
+                            <button type="button" onclick="alert('Conectando a backend de Firebase...')" class="w-full bg-brandBlue hover:bg-brandBlueHover text-white py-3 rounded-full font-bold shadow-md transition">
+                                Iniciar sesión
+                            </button>
+                        </form>
+                        <div class="pt-4 border-t border-slate-800 text-xs space-y-2">
+                            <a href="#" class="block text-slate-300 font-semibold hover:underline">Crear una cuenta</a>
+                            <a href="#" class="block text-slate-500 hover:underline">Políticas de privacidad</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="hidden md:block md:col-span-7 bg-cover bg-center relative" style="background-image: url('https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=1200&q=80');">
+                    <div class="absolute inset-0 bg-slate-950/40"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SECCIÓN 3: REGISTRA TU MENSAJERÍA ================= -->
+        <div id="tab-registra-mensajeria" class="tab-content hidden py-16 px-6 max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-12 items-start">
+                <div class="md:col-span-5 space-y-6">
+                    <h2 class="text-4xl font-black text-white leading-tight">
+                        Aumenta tus clientes, ventas y potencial de marketing
+                    </h2>
+                    <p class="text-slate-400 leading-relaxed">
+                        Únete a la red de reparto a domicilio de Entreguemos. Optimiza tus rutas, asigna conductores y lleva el control total de tu operación.
+                    </p>
+                    <img id="img-registro-b2b" src="https://images.unsplash.com/photo-1556740758-90de374c12ad?auto=format&fit=crop&w=800&q=80" alt="Registro B2B" class="rounded-2xl shadow-lg w-full object-cover border border-slate-800">
+                </div>
+
+                <div class="md:col-span-7 bg-slate-900 p-8 rounded-3xl shadow-xl border border-slate-800">
+                    <form class="space-y-6">
+                        <div>
+                            <h3 class="text-lg font-bold text-white border-b border-slate-800 pb-2 mb-4 flex items-center">
+                                <i class="fa-solid fa-store text-brandBlue mr-2"></i> Datos de la empresa
+                            </h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-400 mb-1">Nombre de la empresa</label>
+                                    <input type="text" placeholder="p. ej. Mensajería Exprés" class="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 text-white text-sm focus:ring-2 focus:ring-brandBlue focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-400 mb-1">Tipo de socio</label>
+                                    <select class="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 text-white text-sm focus:ring-2 focus:ring-brandBlue focus:outline-none">
+                                        <option value="">Selecciona uno</option>
+                                        <option value="mensajeria">Empresa de Mensajería</option>
+                                        <option value="repartidor">Repartidor Independiente</option>
+                                        <option value="comercio">Comercio / Tienda</option>
+                                    </select>
+                                </div>
+                                <div class="sm:col-span-2">
+                                    <label class="block text-xs font-semibold text-slate-400 mb-1">Dirección comercial</label>
+                                    <input type="text" placeholder="p. ej. Calle 36 #15-24, Bucaramanga" class="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 text-white text-sm focus:ring-2 focus:ring-brandBlue focus:outline-none">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="text-lg font-bold text-white border-b border-slate-800 pb-2 mb-4 flex items-center">
+                                <i class="fa-solid fa-user-gear text-brandBlue mr-2"></i> Datos del propietario / responsable
+                            </h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-400 mb-1">Nombre</label>
+                                    <input type="text" placeholder="Introduce tu nombre" class="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 text-white text-sm focus:ring-2 focus:ring-brandBlue focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-400 mb-1">Apellido(s)</label>
+                                    <input type="text" placeholder="Introduce tu(s) apellido(s)" class="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 text-white text-sm focus:ring-2 focus:ring-brandBlue focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-400 mb-1">Número de teléfono</label>
+                                    <input type="tel" placeholder="p. ej. +57 300 123 4567" class="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 text-white text-sm focus:ring-2 focus:ring-brandBlue focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-400 mb-1">Correo electrónico</label>
+                                    <input type="email" placeholder="p. ej. contacto@empresa.com" class="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 text-white text-sm focus:ring-2 focus:ring-brandBlue focus:outline-none">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="button" onclick="alert('Registro enviado con éxito.')" class="w-full bg-brandBlue hover:bg-brandBlueHover text-white py-4 rounded-xl font-bold shadow-md transition">
+                            Registrarse ahora
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SECCIÓN 4: QUIÉNES SOMOS ================= -->
+        <div id="tab-quienes-somos" class="tab-content hidden py-16 px-6 max-w-7xl mx-auto space-y-12">
+            <div class="text-center max-w-3xl mx-auto space-y-4">
+                <h2 class="text-4xl font-extrabold text-white">Una plataforma que te da el control para ofrecer soluciones en logística</h2>
+                <p class="text-slate-400 text-lg">Conoce la tecnología detrás de Entreguemos y cómo transformamos la experiencia de entrega urbana.</p>
+            </div>
+
+            <div class="max-w-4xl mx-auto bg-slate-900 rounded-3xl overflow-hidden shadow-2xl relative aspect-video flex items-center justify-center border border-slate-800">
+                <iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=0" title="Demostración Entreguemos" frameborder="0" allowfullscreen></iframe>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-950 text-white pt-12 pb-8 border-t border-slate-900">
+        <div class="max-w-7xl mx-auto px-6 space-y-8">
+            <div class="bg-brandBlue rounded-2xl p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
+                <div>
+                    <h3 class="text-2xl font-extrabold">Te ayudamos a mejorar tu alcance, reducir costes y hacer crecer tu negocio</h3>
+                    <p class="text-blue-100 text-sm mt-1">Únete hoy a la comunidad logística de Entreguemos.</p>
+                </div>
+                <button onclick="switchTab('registra-mensajeria')" class="bg-white text-brandBlue hover:bg-slate-100 px-8 py-3 rounded-full font-black text-sm transition shrink-0">
+                    Únete a nosotros ahora
+                </button>
+            </div>
+
+            <div class="flex flex-col md:flex-row items-center justify-between border-t border-slate-900 pt-8 text-xs text-slate-500">
+                <div class="flex items-center space-x-3 mb-4 md:mb-0">
+                    <img src="https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/entreguemos-web-l5ikt1/assets/45uegxloonwf/Logo_pidee_(51).png" alt="Logo Footer" class="h-16 ">
+                    <span>© 2026 Entreguemos. Todos los derechos reservados.</span>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="#" class="hover:text-white">Términos y Condiciones</a>
+                    <a href="#" class="hover:text-white">Políticas de Privacidad</a>
+                    <a href="#" class="hover:text-white">Soporte Técnico</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- SCRIPT DE INTERACTIVIDAD -->
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            
+            const targetTab = document.getElementById('tab-' + tabId);
+            if(targetTab) targetTab.classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active-tab'));
+            const activeNav = document.getElementById('nav-' + tabId);
+            if(activeNav) activeNav.classList.add('active-tab');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
