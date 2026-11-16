@@ -13,7 +13,7 @@
     <!-- Google Maps (carga moderna). Reemplaza TU_API_KEY por tu key -->
     <script>
       (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})
-      ({ key: "AIzaSyAzW4soOx6bA4gQFu0qdAIlCFgYj6Ph0j0", v: "weekly" });
+      ({ key: "TU_API_KEY", v: "weekly" });
     </script>
 
     <style>
@@ -44,12 +44,18 @@
 
         /* Selector de tipo de servicio */
         .tipo-btn {
-            position: relative; display: flex; flex-direction: column; align-items: center; gap: .6rem;
-            padding: 1.15rem .75rem; border: 2px solid #e2e8f0; border-radius: 1.15rem; background: #fff;
+            position: relative; display: flex; flex-direction: column; align-items: center; gap: .75rem;
+            padding: 1.25rem .75rem 1.1rem; border: 2px solid #e2e8f0; border-radius: 1.15rem; background: #fff;
             cursor: pointer; transition: all .2s;
         }
         .tipo-btn:hover { border-color: #94a3b8; }
-        .tipo-btn .ico { width: 3rem; height: 3rem; border-radius: 9999px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .tipo-btn .ico {
+            width: 3.6rem; height: 3.6rem; border-radius: 1.1rem; display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; color: #fff; transition: transform .2s;
+        }
+        .tipo-btn .ico.azul  { background: linear-gradient(135deg, #38bdf8, #0369a1); box-shadow: 0 10px 18px -8px rgba(3,105,161,.6); }
+        .tipo-btn .ico.ambar { background: linear-gradient(135deg, #fbbf24, #ea580c); box-shadow: 0 10px 18px -8px rgba(234,88,12,.6); }
+        .tipo-btn.sel .ico { transform: scale(1.06); }
         .tipo-btn .txt { font-weight: 700; font-size: .85rem; color: #1e293b; text-align: center; line-height: 1.2; }
         .tipo-btn .check {
             position: absolute; top: .6rem; right: .6rem; width: 1.4rem; height: 1.4rem; border-radius: 9999px;
@@ -58,8 +64,6 @@
         }
         .tipo-btn.sel { border-color: #0284c7; background: #f0f9ff; box-shadow: 0 0 0 4px rgba(2,132,199,.10); }
         .tipo-btn.sel .check { opacity: 1; transform: none; }
-        .tipo-btn.compra.sel { border-color: #d97706; background: #fffbeb; box-shadow: 0 0 0 4px rgba(217,119,6,.10); }
-        .tipo-btn.compra.sel .check { background: #d97706; }
 
         /* Botones de opción (destino) */
         .opt {
@@ -68,8 +72,9 @@
             transition: all .2s; cursor: pointer;
         }
         .opt:hover { border-color: #94a3b8; }
-        .opt .oi { width: 2.25rem; height: 2.25rem; border-radius: 9999px; background: #ecfdf5; color: #059669; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .opt.sel { border-color: #059669; background: #ecfdf5; box-shadow: 0 0 0 4px rgba(5,150,105,.10); }
+        .opt .oi { width: 2.25rem; height: 2.25rem; border-radius: 9999px; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .opt.sel { border-color: #0284c7; background: #f0f9ff; box-shadow: 0 0 0 4px rgba(2,132,199,.10); }
+        .opt.sel .oi { background: #0284c7; color: #fff; }
 
         /* Lista de sugerencias de direcciones */
         .sugerencias {
@@ -124,12 +129,12 @@
                 <div class="grid grid-cols-2 gap-3">
                     <button type="button" id="btn-tipo-recoger" onclick="seleccionarTipo('recoger')" class="tipo-btn">
                         <span class="check"><i class="fa-solid fa-check"></i></span>
-                        <span class="ico bg-sky-100 text-sky-600"><i class="fa-solid fa-box-open"></i></span>
+                        <span class="ico azul"><i class="fa-solid fa-truck-fast"></i></span>
                         <span class="txt">Recoger y entregar</span>
                     </button>
-                    <button type="button" id="btn-tipo-comprar" onclick="seleccionarTipo('comprar')" class="tipo-btn compra">
+                    <button type="button" id="btn-tipo-comprar" onclick="seleccionarTipo('comprar')" class="tipo-btn">
                         <span class="check"><i class="fa-solid fa-check"></i></span>
-                        <span class="ico bg-amber-100 text-amber-600"><i class="fa-solid fa-bag-shopping"></i></span>
+                        <span class="ico ambar"><i class="fa-solid fa-basket-shopping"></i></span>
                         <span class="txt">Comprar algo y llevar</span>
                     </button>
                 </div>
@@ -208,7 +213,7 @@
                 <div id="step-destino" class="paso hidden">
                     <label class="etq"><span class="num">5</span><span>Dirección de destino</span></label>
                     <div class="cw">
-                        <i class="fa-solid fa-flag-checkered icono" style="color:#059669"></i>
+                        <i class="fa-solid fa-flag-checkered icono" style="color:#0369a1"></i>
                         <input type="text" id="direccionDestinoTxt" autocomplete="off" autocapitalize="off" spellcheck="false"
                                placeholder="Escribe la dirección de entrega y elígela de la lista" class="campo">
                         <div id="lista-destino" class="sugerencias hidden"></div>
@@ -219,7 +224,7 @@
                     <input type="hidden" id="lngDestino">
                 </div>
 
-                <!-- PASO 6: DETALLES DE LA ENTREGA -->
+                <!-- PASO 6: DETALLES DE LA ENTREGA (solo si llena el destino) -->
                 <div id="step-entrega" class="paso hidden">
                     <label class="etq"><span class="num">6</span><span>Detalles de la entrega al llegar el repartidor</span></label>
                     <div class="cw">
@@ -448,20 +453,27 @@
             btnEntrega.classList.remove('sel');
 
             if (opcion === 'destino') {
+                // Llena el destino: se muestran la dirección, los detalles y el botón de enviar
                 btnDestino.classList.add('sel');
                 document.getElementById('step-destino').classList.remove('hidden');
                 document.getElementById('step-entrega').classList.remove('hidden');
                 document.getElementById('step-submit').classList.remove('hidden');
             } else if (opcion === 'entrega') {
+                // Datos al llegar el repartidor: solo se muestra el botón de enviar
                 btnEntrega.classList.add('sel');
+
                 document.getElementById('step-destino').classList.add('hidden');
                 document.getElementById('direccionDestinoTxt').value = "";
                 document.getElementById('direccionDestino').value = "";
                 document.getElementById('latDestino').value = "";
                 document.getElementById('lngDestino').value = "";
                 document.getElementById('err-destino').classList.add('hidden');
-                document.getElementById('step-entrega').classList.remove('hidden');
+
+                document.getElementById('step-entrega').classList.add('hidden');
+                document.getElementById('detallesEntrega').value = "";
+
                 document.getElementById('step-submit').classList.remove('hidden');
+                setTimeout(() => document.getElementById('step-submit').scrollIntoView({ behavior: 'smooth', block: 'center' }), 150);
             }
         }
 
@@ -575,7 +587,7 @@
                     icon: 'success',
                     title: '¡Solicitud enviada!',
                     text: `Tu orden ${payload.numero_orden} fue enviada a la mensajería. En breve asignaremos tu repartidor.`,
-                    confirmButtonColor: '#059669'
+                    confirmButtonColor: '#0284c7'
                 }).then(() => { location.reload(); });
 
             } catch (error) {
@@ -584,7 +596,7 @@
                     icon: 'error',
                     title: 'Error al enviar',
                     text: 'No se pudo registrar la solicitud. Verifica tu conexión e intenta nuevamente.',
-                    confirmButtonColor: '#059669'
+                    confirmButtonColor: '#0284c7'
                 });
                 btn.disabled = false;
                 btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i><span>Enviar solicitud</span>`;
