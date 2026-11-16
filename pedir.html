@@ -1,172 +1,239 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <script>
-      // ===== DIAGNÓSTICO (borrar cuando todo funcione) =====
-      window.gm_authFailure = () => alert("Google rechazó la key (restricción de dominio, API o facturación).");
-      const _err = console.error;
-      console.error = (...a) => {
-        _err(...a);
-        let d = document.getElementById('dbg');
-        if (!d) {
-          d = document.createElement('pre');
-          d.id = 'dbg';
-          d.style.cssText = 'position:fixed;bottom:0;left:0;right:0;max-height:40vh;overflow:auto;background:#000;color:#0f0;font-size:11px;padding:6px;z-index:99999;white-space:pre-wrap;margin:0';
-          document.body.appendChild(d);
-        }
-        d.textContent += a.map(String).join(' ') + '\n\n';
-      };
-      window.addEventListener('error', e => console.error(e.message));
-      window.addEventListener('unhandledrejection', e => console.error(String(e.reason)));
-    </script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solicitar Servicio - Entreguemos</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Google Maps (carga moderna). Reemplaza TU_API_KEY por tu key -->
     <script>
       (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})
-      ({ key: "AIzaSyAzW4soOx6bA4gQFu0qdAIlCFgYj6Ph0j0", v: "weekly" });
+      ({ key: "TU_API_KEY", v: "weekly" });
     </script>
 
     <style>
-        gmp-place-autocomplete {
-            width: 100%;
-            display: block;
-            color-scheme: light;
-            border-radius: 0.75rem;
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+
+        /* Animación al aparecer cada paso */
+        .paso { animation: aparecer .35s ease both; }
+        @keyframes aparecer {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: none; }
         }
-        .pac-container { z-index: 999999 !important; }
+
+        /* Etiquetas con número */
+        .etq { display: flex; align-items: center; gap: .55rem; font-size: .8rem; font-weight: 700; color: #334155; margin-bottom: .45rem; }
+        .num { width: 1.4rem; height: 1.4rem; border-radius: 9999px; background: #0f172a; color: #fff; font-size: .7rem; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+        /* Campos */
+        .cw { position: relative; }
+        .icono { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; font-size: .9rem; transition: color .15s; }
+        .icono.top { top: 1.15rem; transform: none; }
+        .cw:focus-within .icono { color: #0284c7; }
+        .campo {
+            width: 100%; padding: .9rem 1rem .9rem 2.75rem; border: 1px solid #e2e8f0; background: #fff;
+            border-radius: .95rem; font-size: 1rem; color: #0f172a; transition: border-color .15s, box-shadow .15s; resize: none;
+        }
+        .campo::placeholder { color: #94a3b8; }
+        .campo:focus { outline: none; border-color: #0284c7; box-shadow: 0 0 0 4px rgba(2,132,199,.12); }
+
+        /* Selector de tipo de servicio */
+        .tipo-btn {
+            position: relative; display: flex; flex-direction: column; align-items: center; gap: .6rem;
+            padding: 1.15rem .75rem; border: 2px solid #e2e8f0; border-radius: 1.15rem; background: #fff;
+            cursor: pointer; transition: all .2s;
+        }
+        .tipo-btn:hover { border-color: #94a3b8; }
+        .tipo-btn .ico { width: 3rem; height: 3rem; border-radius: 9999px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .tipo-btn .txt { font-weight: 700; font-size: .85rem; color: #1e293b; text-align: center; line-height: 1.2; }
+        .tipo-btn .check {
+            position: absolute; top: .6rem; right: .6rem; width: 1.4rem; height: 1.4rem; border-radius: 9999px;
+            background: #0284c7; color: #fff; font-size: .65rem; display: flex; align-items: center; justify-content: center;
+            opacity: 0; transform: scale(.5); transition: all .2s;
+        }
+        .tipo-btn.sel { border-color: #0284c7; background: #f0f9ff; box-shadow: 0 0 0 4px rgba(2,132,199,.10); }
+        .tipo-btn.sel .check { opacity: 1; transform: none; }
+        .tipo-btn.compra.sel { border-color: #d97706; background: #fffbeb; box-shadow: 0 0 0 4px rgba(217,119,6,.10); }
+        .tipo-btn.compra.sel .check { background: #d97706; }
+
+        /* Botones de opción (destino) */
+        .opt {
+            display: flex; align-items: center; gap: .75rem; padding: .9rem 1rem; border: 2px solid #e2e8f0;
+            border-radius: 1rem; background: #fff; text-align: left; font-weight: 700; font-size: .8rem; color: #1e293b;
+            transition: all .2s; cursor: pointer;
+        }
+        .opt:hover { border-color: #94a3b8; }
+        .opt .oi { width: 2.25rem; height: 2.25rem; border-radius: 9999px; background: #ecfdf5; color: #059669; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .opt.sel { border-color: #059669; background: #ecfdf5; box-shadow: 0 0 0 4px rgba(5,150,105,.10); }
+
+        /* Lista de sugerencias de direcciones */
+        .sugerencias {
+            position: absolute; left: 0; right: 0; top: calc(100% + 6px); background: #fff; border: 1px solid #e2e8f0;
+            border-radius: 1rem; box-shadow: 0 20px 25px -5px rgba(15,23,42,.15), 0 8px 10px -6px rgba(15,23,42,.1);
+            z-index: 60; overflow: hidden; max-height: 18rem; overflow-y: auto;
+        }
+        .sug-item {
+            display: flex; align-items: center; gap: .75rem; width: 100%; padding: .8rem 1rem; text-align: left;
+            background: #fff; border: 0; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background .12s;
+        }
+        .sug-item:hover, .sug-item:active { background: #f0f9ff; }
+        .sug-item .pin { width: 2rem; height: 2rem; border-radius: 9999px; background: #f1f5f9; color: #475569; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: .8rem; }
+        .sug-item .t1 { font-size: .9rem; font-weight: 600; color: #0f172a; line-height: 1.2; }
+        .sug-item .t2 { font-size: .75rem; color: #64748b; margin-top: .1rem; }
+        .sug-pie { padding: .45rem 1rem; font-size: .65rem; color: #94a3b8; text-align: right; background: #f8fafc; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col justify-between">
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
 
     <!-- CABECERA -->
-    <header class="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-50">
+    <header class="bg-white/90 backdrop-blur border-b border-slate-200/70 sticky top-0 z-50">
         <div class="max-w-xl mx-auto px-4 h-16 flex items-center justify-between">
-            <img id="logo-mensajeria" src="https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/entreguemos-web-l5ikt1/assets/45uegxloonwf/Logo_pidee_(51).png" alt="Logo" class="h-11 w-11 rounded-xl object-contain bg-slate-50 border border-slate-100 p-1">
+            <img id="logo-mensajeria" src="https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/entreguemos-web-l5ikt1/assets/45uegxloonwf/Logo_pidee_(51).png" alt="Logo" class="h-11 w-11 rounded-xl object-contain bg-white border border-slate-200 p-1 shadow-sm">
 
-            <h1 id="titulo-mensajeria" class="text-base sm:text-lg font-black text-slate-900 tracking-tight text-center truncate px-2">
+            <h1 id="titulo-mensajeria" class="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight text-center truncate px-2">
                 Cargando...
             </h1>
 
-            <div class="w-11 flex justify-end text-sky-600">
-                <i class="fa-solid fa-motorcycle text-xl"></i>
+            <div class="w-11 h-11 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
+                <i class="fa-solid fa-motorcycle text-lg"></i>
             </div>
         </div>
     </header>
 
+    <!-- FRANJA SUPERIOR -->
+    <section class="bg-gradient-to-br from-slate-900 via-slate-800 to-sky-900 text-white">
+        <div class="max-w-xl mx-auto px-5 pt-8 pb-16">
+            <p class="text-sky-300 text-xs font-semibold uppercase tracking-[0.18em]">Solicitud de servicio</p>
+            <h2 class="mt-2 text-2xl sm:text-3xl font-extrabold tracking-tight leading-tight">Un repartidor, a tu disposición</h2>
+            <p class="mt-2 text-sm text-slate-300">Cuéntanos qué necesitas y nosotros lo gestionamos por ti.</p>
+        </div>
+    </section>
+
     <!-- CONTENIDO PRINCIPAL -->
-    <main class="max-w-xl mx-auto px-4 py-6 w-full flex-grow">
-        <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-xl border border-slate-200 space-y-6">
+    <main class="max-w-xl mx-auto px-4 -mt-10 pb-10 w-full flex-grow relative z-10">
+        <div class="bg-white rounded-3xl shadow-[0_20px_50px_-12px_rgba(15,23,42,0.25)] border border-slate-200/70 p-5 sm:p-8 space-y-7">
 
-            <!-- SELECCIÓN DE TIPO DE SERVICIO -->
+            <!-- TIPO DE SERVICIO -->
             <div class="space-y-3">
-                <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 text-center">¿Qué servicio necesitas hoy?</label>
+                <p class="text-center text-xs font-bold uppercase tracking-wider text-slate-500">¿Qué servicio necesitas hoy?</p>
                 <div class="grid grid-cols-2 gap-3">
-                    <button type="button" id="btn-tipo-recoger" onclick="seleccionarTipo('recoger')"
-                        class="tipo-btn flex flex-col items-center justify-center p-4 rounded-2xl border-2 border-slate-200 bg-slate-50 hover:border-sky-500 transition text-center space-y-2">
-                        <div class="w-12 h-12 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center text-xl">
-                            <i class="fa-solid fa-box-open"></i>
-                        </div>
-                        <span class="text-xs sm:text-sm font-extrabold text-slate-800 leading-tight">Recoger y entregar</span>
+                    <button type="button" id="btn-tipo-recoger" onclick="seleccionarTipo('recoger')" class="tipo-btn">
+                        <span class="check"><i class="fa-solid fa-check"></i></span>
+                        <span class="ico bg-sky-100 text-sky-600"><i class="fa-solid fa-box-open"></i></span>
+                        <span class="txt">Recoger y entregar</span>
                     </button>
-
-                    <button type="button" id="btn-tipo-comprar" onclick="seleccionarTipo('comprar')"
-                        class="tipo-btn flex flex-col items-center justify-center p-4 rounded-2xl border-2 border-slate-200 bg-slate-50 hover:border-sky-500 transition text-center space-y-2">
-                        <div class="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-xl">
-                            <i class="fa-solid fa-bag-shopping"></i>
-                        </div>
-                        <span class="text-xs sm:text-sm font-extrabold text-slate-800 leading-tight">Comprar algo y llevar</span>
+                    <button type="button" id="btn-tipo-comprar" onclick="seleccionarTipo('comprar')" class="tipo-btn compra">
+                        <span class="check"><i class="fa-solid fa-check"></i></span>
+                        <span class="ico bg-amber-100 text-amber-600"><i class="fa-solid fa-bag-shopping"></i></span>
+                        <span class="txt">Comprar algo y llevar</span>
                     </button>
                 </div>
             </div>
 
             <!-- FORMULARIO PASO A PASO -->
-            <form id="form-pedido-whatsapp" class="space-y-5 hidden">
+            <form id="form-pedido-whatsapp" class="space-y-6 hidden" novalidate>
 
                 <!-- PASO 1: NOMBRE -->
-                <div id="step-1" class="space-y-1">
-                    <label class="block text-xs font-bold text-slate-700">1. Nombre de quien envía / solicita</label>
-                    <input type="text" id="nombreRemitente" required placeholder="p. ej. Carlos Pérez"
-                        class="w-full p-3.5 rounded-xl bg-slate-50 border border-slate-300 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none">
+                <div id="step-1" class="paso">
+                    <label class="etq"><span class="num">1</span><span>Nombre de quien envía / solicita</span></label>
+                    <div class="cw">
+                        <i class="fa-regular fa-user icono"></i>
+                        <input type="text" id="nombreRemitente" required placeholder="p. ej. Carlos Pérez" class="campo">
+                    </div>
                 </div>
 
                 <!-- PASO 2: TELÉFONO -->
-                <div id="step-2" class="space-y-1 hidden">
-                    <label class="block text-xs font-bold text-slate-700">2. Teléfono de contacto</label>
-                    <input type="tel" id="telefonoRemitente" required placeholder="p. ej. 3001234567"
-                        class="w-full p-3.5 rounded-xl bg-slate-50 border border-slate-300 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none">
+                <div id="step-2" class="paso hidden">
+                    <label class="etq"><span class="num">2</span><span>Teléfono de contacto</span></label>
+                    <div class="cw">
+                        <i class="fa-solid fa-phone icono"></i>
+                        <input type="tel" inputmode="tel" id="telefonoRemitente" required placeholder="p. ej. 3001234567" class="campo">
+                    </div>
                 </div>
 
                 <!-- PASO 3: DIRECCIÓN DE ORIGEN -->
-                <div id="step-3" class="space-y-1 hidden">
-                    <label id="label-origen" class="block text-xs font-bold text-slate-700">3. ¿A dónde debe ir el repartidor a recoger?</label>
-                    <div id="contRecogida"></div>
-                    <p id="err-recogida" class="hidden text-xs text-red-600 font-semibold">Escribe la dirección y selecciónala de la lista.</p>
+                <div id="step-3" class="paso hidden">
+                    <label class="etq"><span class="num">3</span><span id="label-origen">¿A dónde debe ir el repartidor a recoger?</span></label>
+                    <div class="cw">
+                        <i class="fa-solid fa-location-dot icono" style="color:#0284c7"></i>
+                        <input type="text" id="direccionRecogidaTxt" autocomplete="off" autocapitalize="off" spellcheck="false"
+                               placeholder="Escribe la dirección y elígela de la lista" class="campo">
+                        <div id="lista-recogida" class="sugerencias hidden"></div>
+                    </div>
+                    <p id="err-recogida" class="hidden text-xs text-red-600 font-semibold mt-2"><i class="fa-solid fa-circle-exclamation"></i> Escribe la dirección y selecciónala de la lista.</p>
                     <input type="hidden" id="direccionRecogida">
                     <input type="hidden" id="latRecogida">
                     <input type="hidden" id="lngRecogida">
                 </div>
 
                 <!-- PASO 4: QUÉ HACER EN EL ORIGEN -->
-                <div id="step-4" class="space-y-1 hidden">
-                    <label id="label-detalle-origen" class="block text-xs font-bold text-slate-700">4. ¿Qué debe hacer el repartidor en el origen?</label>
-                    <textarea id="instruccionesOrigen" required rows="2" placeholder="p. ej. Preguntar por Andrea en recepción..."
-                        class="w-full p-3.5 rounded-xl bg-slate-50 border border-slate-300 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none"></textarea>
+                <div id="step-4" class="paso hidden">
+                    <label class="etq"><span class="num">4</span><span id="label-detalle-origen">¿Qué debe hacer el repartidor en el origen?</span></label>
+                    <div class="cw">
+                        <i class="fa-regular fa-comment-dots icono top"></i>
+                        <textarea id="instruccionesOrigen" required rows="3" placeholder="p. ej. Preguntar por Andrea en recepción..." class="campo"></textarea>
+                    </div>
                 </div>
 
                 <!-- CAMPO EXTRA SI ES COMPRA -->
-                <div id="step-compra" class="space-y-1 hidden bg-amber-50/70 p-4 rounded-2xl border border-amber-200">
-                    <label class="block text-xs font-bold text-amber-900">Valor aproximado de la compra (sin incluir el envío)</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-amber-700 font-bold">$</span>
-                        <input type="number" id="costoCompra" min="0" placeholder="0"
-                            class="w-full p-3 pl-8 rounded-xl bg-white border border-amber-300 text-sm font-bold focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                <div id="step-compra" class="paso hidden bg-amber-50 p-4 rounded-2xl border border-amber-200">
+                    <label class="block text-xs font-bold text-amber-900 mb-2">Valor aproximado de la compra (sin incluir el envío)</label>
+                    <div class="cw">
+                        <i class="fa-solid fa-dollar-sign icono" style="color:#b45309"></i>
+                        <input type="number" inputmode="numeric" id="costoCompra" min="0" placeholder="0" class="campo" style="border-color:#fcd34d;font-weight:700">
                     </div>
                 </div>
 
                 <!-- BOTONES DE OPCIÓN -->
-                <div id="step-botones-destino" class="hidden pt-1 space-y-2">
-                    <label class="block text-xs font-bold text-slate-700 text-center">¿Cómo deseas continuar?</label>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <button type="button" id="btn-toggle-destino" onclick="activarOpcion('destino')"
-                            class="flex items-center justify-center space-x-2 py-3.5 px-4 rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-800 text-xs font-extrabold border-2 border-slate-200 transition text-center shadow-sm">
-                            <i class="fa-solid fa-map-pin text-emerald-600 text-sm"></i>
+                <div id="step-botones-destino" class="paso hidden space-y-3">
+                    <p class="text-center text-xs font-bold text-slate-600">¿Cómo deseas continuar?</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <button type="button" id="btn-toggle-destino" onclick="activarOpcion('destino')" class="opt">
+                            <span class="oi"><i class="fa-solid fa-map-pin"></i></span>
                             <span>¿Llenamos el destino?</span>
                         </button>
-                        <button type="button" id="btn-toggle-entrega" onclick="activarOpcion('entrega')"
-                            class="flex items-center justify-center space-x-2 py-3.5 px-4 rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-800 text-xs font-extrabold border-2 border-slate-200 transition text-center shadow-sm">
-                            <i class="fa-solid fa-clipboard-check text-emerald-600 text-sm"></i>
+                        <button type="button" id="btn-toggle-entrega" onclick="activarOpcion('entrega')" class="opt">
+                            <span class="oi"><i class="fa-solid fa-clipboard-check"></i></span>
                             <span>Datos del destino al llegar el repartidor</span>
                         </button>
                     </div>
                 </div>
 
                 <!-- PASO 5: DIRECCIÓN DE DESTINO -->
-                <div id="step-destino" class="space-y-1 hidden">
-                    <label class="block text-xs font-bold text-slate-700">5. Dirección de destino</label>
-                    <div id="contDestino"></div>
+                <div id="step-destino" class="paso hidden">
+                    <label class="etq"><span class="num">5</span><span>Dirección de destino</span></label>
+                    <div class="cw">
+                        <i class="fa-solid fa-flag-checkered icono" style="color:#059669"></i>
+                        <input type="text" id="direccionDestinoTxt" autocomplete="off" autocapitalize="off" spellcheck="false"
+                               placeholder="Escribe la dirección de entrega y elígela de la lista" class="campo">
+                        <div id="lista-destino" class="sugerencias hidden"></div>
+                    </div>
+                    <p id="err-destino" class="hidden text-xs text-red-600 font-semibold mt-2"><i class="fa-solid fa-circle-exclamation"></i> Escribe la dirección y selecciónala de la lista.</p>
                     <input type="hidden" id="direccionDestino">
                     <input type="hidden" id="latDestino">
                     <input type="hidden" id="lngDestino">
                 </div>
 
                 <!-- PASO 6: DETALLES DE LA ENTREGA -->
-                <div id="step-entrega" class="space-y-1 hidden">
-                    <label class="block text-xs font-bold text-slate-700">6. Detalles de la entrega al llegar el repartidor</label>
-                    <textarea id="detallesEntrega" rows="2" placeholder="p. ej. Timbrar apto 302, recibe Juan..."
-                        class="w-full p-3.5 rounded-xl bg-slate-50 border border-slate-300 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none"></textarea>
+                <div id="step-entrega" class="paso hidden">
+                    <label class="etq"><span class="num">6</span><span>Detalles de la entrega al llegar el repartidor</span></label>
+                    <div class="cw">
+                        <i class="fa-solid fa-pen icono top"></i>
+                        <textarea id="detallesEntrega" rows="3" placeholder="p. ej. Timbrar apto 302, recibe Juan..." class="campo"></textarea>
+                    </div>
                 </div>
 
                 <!-- BOTÓN ENVIAR -->
-                <div id="step-submit" class="hidden pt-2">
-                    <button type="submit" id="btn-enviar" class="w-full bg-sky-600 hover:bg-sky-700 text-white py-4 rounded-xl font-bold shadow-lg transition flex items-center justify-center space-x-2">
+                <div id="step-submit" class="paso hidden pt-1">
+                    <button type="submit" id="btn-enviar"
+                        class="w-full text-white py-4 rounded-2xl font-bold shadow-lg shadow-sky-600/25 transition flex items-center justify-center gap-2 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 active:scale-[.99] disabled:opacity-70">
                         <i class="fa-solid fa-paper-plane"></i>
-                        <span>Enviar Solicitud</span>
+                        <span>Enviar solicitud</span>
                     </button>
                 </div>
 
@@ -175,8 +242,8 @@
     </main>
 
     <!-- FOOTER -->
-    <footer class="bg-slate-900 text-slate-400 py-5 text-center text-xs">
-        <p>Tecnología logística por <span class="text-white font-bold">Entreguemos</span> &copy; 2026</p>
+    <footer class="py-6 text-center text-xs text-slate-400">
+        <p>Tecnología logística por <span class="text-slate-600 font-bold">Entreguemos</span> &copy; 2026</p>
     </footer>
 
     <!-- FIREBASE SDKs -->
@@ -223,60 +290,151 @@
             }
         }
 
-        // ===== Autocomplete NUEVO (PlaceAutocompleteElement) =====
-        async function crearAutocomplete(contId, idDireccion, idLat, idLng, onSelect) {
-            try {
-                const { PlaceAutocompleteElement } = await google.maps.importLibrary("places");
-                const el = new PlaceAutocompleteElement({ includedRegionCodes: ['co'] });
-                document.getElementById(contId).appendChild(el);
+        /* =========================================================
+           BUSCADOR DE DIRECCIONES (Places API New, lista propia)
+           La lista aparece debajo del campo, sin cambiar de pantalla.
+           ========================================================= */
+        // Las sugerencias se priorizan cerca de este punto (no restringe, solo prioriza).
+        const CENTRO_BUSQUEDA = { lat: 7.1254, lng: -73.1198 }; // Bucaramanga
+        const RADIO_BUSQUEDA = 50000; // metros (máximo 50000)
 
-                el.addEventListener('gmp-select', async ({ placePrediction }) => {
-                    const place = placePrediction.toPlace();
-                    await place.fetchFields({ fields: ['formattedAddress', 'location', 'displayName'] });
-                    const dir = place.formattedAddress || place.displayName || '';
-                    document.getElementById(idDireccion).value = dir;
-                    document.getElementById(idLat).value = place.location ? place.location.lat() : '';
-                    document.getElementById(idLng).value = place.location ? place.location.lng() : '';
-                    if (onSelect) onSelect();
-                });
-            } catch (err) {
-                console.error("Error cargando Autocomplete:", err);
-            }
+        let placesLib = null;
+        async function cargarPlaces() {
+            if (!placesLib) placesLib = await google.maps.importLibrary("places");
+            return placesLib;
         }
 
-        function initAutocomplete() {
-            crearAutocomplete('contRecogida', 'direccionRecogida', 'latRecogida', 'lngRecogida', () => {
-                document.getElementById('err-recogida').classList.add('hidden');
-                document.getElementById('step-4').classList.remove('hidden');
+        function crearBuscadorDireccion(cfg) {
+            const input = document.getElementById(cfg.inputId);
+            const lista = document.getElementById(cfg.listaId);
+            const dir = document.getElementById(cfg.dirId);
+            const lat = document.getElementById(cfg.latId);
+            const lng = document.getElementById(cfg.lngId);
+            const err = document.getElementById(cfg.errId);
+
+            let token = null, timer = null, reqId = 0;
+
+            const limpiarSeleccion = () => { dir.value = ''; lat.value = ''; lng.value = ''; };
+            const cerrar = () => { lista.classList.add('hidden'); lista.innerHTML = ''; };
+
+            function pintar(sugerencias) {
+                lista.innerHTML = '';
+                const validas = sugerencias.filter(s => s.placePrediction);
+                if (!validas.length) { cerrar(); return; }
+
+                validas.forEach(s => {
+                    const p = s.placePrediction;
+                    const principal = (p.mainText && p.mainText.text) || (p.text && p.text.text) || '';
+                    const secundario = (p.secondaryText && p.secondaryText.text) || '';
+
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'sug-item';
+                    btn.innerHTML = '<span class="pin"><i class="fa-solid fa-location-dot"></i></span><span><div class="t1"></div><div class="t2"></div></span>';
+                    btn.querySelector('.t1').textContent = principal;
+                    btn.querySelector('.t2').textContent = secundario;
+                    btn.addEventListener('click', () => seleccionar(p));
+                    lista.appendChild(btn);
+                });
+
+                const pie = document.createElement('div');
+                pie.className = 'sug-pie';
+                pie.textContent = 'Powered by Google';
+                lista.appendChild(pie);
+                lista.classList.remove('hidden');
+            }
+
+            async function buscar(texto) {
+                const miId = ++reqId;
+                try {
+                    const { AutocompleteSuggestion, AutocompleteSessionToken } = await cargarPlaces();
+                    if (!token) token = new AutocompleteSessionToken();
+                    const { suggestions } = await AutocompleteSuggestion.fetchAutocompleteSuggestions({
+                        input: texto,
+                        sessionToken: token,
+                        includedRegionCodes: ['co'],
+                        language: 'es',
+                        region: 'co',
+                        locationBias: { center: CENTRO_BUSQUEDA, radius: RADIO_BUSQUEDA }
+                    });
+                    if (miId !== reqId) return; // llegó una respuesta vieja
+                    pintar(suggestions);
+                } catch (e) {
+                    console.error("Error buscando direcciones:", e);
+                }
+            }
+
+            async function seleccionar(prediccion) {
+                try {
+                    const place = prediccion.toPlace();
+                    await place.fetchFields({ fields: ['formattedAddress', 'location', 'displayName'] });
+                    const texto = place.formattedAddress || (prediccion.text && prediccion.text.text) || '';
+                    input.value = texto;
+                    dir.value = texto;
+                    lat.value = place.location ? place.location.lat() : '';
+                    lng.value = place.location ? place.location.lng() : '';
+                    token = null; // la siguiente búsqueda inicia una sesión nueva
+                    cerrar();
+                    input.blur();
+                    if (err) err.classList.add('hidden');
+                    if (cfg.onSelect) cfg.onSelect();
+                } catch (e) {
+                    console.error("Error obteniendo la dirección:", e);
+                }
+            }
+
+            input.addEventListener('input', () => {
+                limpiarSeleccion(); // si edita el texto, debe elegir de nuevo de la lista
+                clearTimeout(timer);
+                const q = input.value.trim();
+                if (q.length < 3) { cerrar(); return; }
+                timer = setTimeout(() => buscar(q), 250);
             });
-            crearAutocomplete('contDestino', 'direccionDestino', 'latDestino', 'lngDestino');
+
+            input.addEventListener('focus', () => {
+                setTimeout(() => input.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+            });
+
+            input.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrar(); });
+
+            document.addEventListener('pointerdown', (e) => {
+                if (!lista.contains(e.target) && e.target !== input) cerrar();
+            });
         }
 
         window.onload = () => {
             cargarDatosMensajeria();
-            initAutocomplete();
-        };
 
-        function seleccionarTipo(tipo) {
-            tipoServicioSeleccionado = tipo;
-            document.querySelectorAll('.tipo-btn').forEach(btn => {
-                btn.classList.remove('border-sky-600', 'bg-sky-50', 'ring-2', 'ring-sky-200');
-                btn.classList.add('border-slate-200', 'bg-slate-50');
+            crearBuscadorDireccion({
+                inputId: 'direccionRecogidaTxt', listaId: 'lista-recogida',
+                dirId: 'direccionRecogida', latId: 'latRecogida', lngId: 'lngRecogida', errId: 'err-recogida',
+                onSelect: () => document.getElementById('step-4').classList.remove('hidden')
             });
 
-            const btnActivo = document.getElementById('btn-tipo-' + tipo);
-            btnActivo.classList.remove('border-slate-200', 'bg-slate-50');
-            btnActivo.classList.add('border-sky-600', 'bg-sky-50', 'ring-2', 'ring-sky-200');
+            crearBuscadorDireccion({
+                inputId: 'direccionDestinoTxt', listaId: 'lista-destino',
+                dirId: 'direccionDestino', latId: 'latDestino', lngId: 'lngDestino', errId: 'err-destino'
+            });
+        };
+
+        /* ========================= FLUJO DEL FORMULARIO ========================= */
+        function seleccionarTipo(tipo) {
+            tipoServicioSeleccionado = tipo;
+            document.querySelectorAll('.tipo-btn').forEach(btn => btn.classList.remove('sel'));
+            document.getElementById('btn-tipo-' + tipo).classList.add('sel');
 
             document.getElementById('form-pedido-whatsapp').classList.remove('hidden');
 
             if (tipo === 'comprar') {
-                document.getElementById('label-origen').innerText = "3. ¿En qué tienda o dirección debe comprar el repartidor?";
-                document.getElementById('label-detalle-origen').innerText = "4. ¿Qué debe comprar el repartidor?";
+                document.getElementById('label-origen').textContent = "¿En qué tienda o dirección debe comprar el repartidor?";
+                document.getElementById('label-detalle-origen').textContent = "¿Qué debe comprar el repartidor?";
                 document.getElementById('instruccionesOrigen').placeholder = "p. ej. 2 cajas de acetaminofén en la droguería...";
+                if (document.getElementById('instruccionesOrigen').value.trim().length > 3) {
+                    document.getElementById('step-compra').classList.remove('hidden');
+                }
             } else {
-                document.getElementById('label-origen').innerText = "3. ¿A dónde debe ir el repartidor a recoger?";
-                document.getElementById('label-detalle-origen').innerText = "4. ¿Qué debe hacer el repartidor en el origen?";
+                document.getElementById('label-origen').textContent = "¿A dónde debe ir el repartidor a recoger?";
+                document.getElementById('label-detalle-origen').textContent = "¿Qué debe hacer el repartidor en el origen?";
                 document.getElementById('instruccionesOrigen').placeholder = "p. ej. Preguntar por Andrea en recepción...";
                 document.getElementById('step-compra').classList.add('hidden');
                 document.getElementById('costoCompra').value = "";
@@ -286,24 +444,22 @@
         function activarOpcion(opcion) {
             const btnDestino = document.getElementById('btn-toggle-destino');
             const btnEntrega = document.getElementById('btn-toggle-entrega');
-
-            const baseStyle = "flex items-center justify-center space-x-2 py-3.5 px-4 rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-800 text-xs font-extrabold border-2 border-slate-200 transition text-center shadow-sm";
-            const activeStyle = "flex items-center justify-center space-x-2 py-3.5 px-4 rounded-2xl bg-emerald-50 text-emerald-950 text-xs font-extrabold border-2 border-emerald-600 ring-2 ring-emerald-200 transition text-center shadow-md";
-
-            btnDestino.className = baseStyle;
-            btnEntrega.className = baseStyle;
+            btnDestino.classList.remove('sel');
+            btnEntrega.classList.remove('sel');
 
             if (opcion === 'destino') {
-                btnDestino.className = activeStyle;
+                btnDestino.classList.add('sel');
                 document.getElementById('step-destino').classList.remove('hidden');
                 document.getElementById('step-entrega').classList.remove('hidden');
                 document.getElementById('step-submit').classList.remove('hidden');
             } else if (opcion === 'entrega') {
-                btnEntrega.className = activeStyle;
+                btnEntrega.classList.add('sel');
                 document.getElementById('step-destino').classList.add('hidden');
+                document.getElementById('direccionDestinoTxt').value = "";
                 document.getElementById('direccionDestino').value = "";
                 document.getElementById('latDestino').value = "";
                 document.getElementById('lngDestino').value = "";
+                document.getElementById('err-destino').classList.add('hidden');
                 document.getElementById('step-entrega').classList.remove('hidden');
                 document.getElementById('step-submit').classList.remove('hidden');
             }
@@ -338,14 +494,31 @@
             return '#' + num;
         }
 
+        /* ========================= ENVÍO ========================= */
         document.getElementById('form-pedido-whatsapp').addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            // Validación manual: el origen debe venir de la lista de Google
+            // Campos de texto obligatorios
+            const nombre = document.getElementById('nombreRemitente').value.trim();
+            const telefono = document.getElementById('telefonoRemitente').value.trim();
+            const instrucciones = document.getElementById('instruccionesOrigen').value.trim();
+            if (!nombre || !telefono || !instrucciones) {
+                Swal.fire({ icon: 'warning', title: 'Faltan datos', text: 'Completa tu nombre, teléfono y las instrucciones del origen.', confirmButtonColor: '#0284c7' });
+                return;
+            }
+
+            // La dirección de origen debe venir de la lista (así tenemos las coordenadas)
             if (!document.getElementById('direccionRecogida').value.trim()) {
-                const err = document.getElementById('err-recogida');
-                err.classList.remove('hidden');
+                document.getElementById('err-recogida').classList.remove('hidden');
                 document.getElementById('step-3').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+
+            // Si eligió llenar el destino, también debe venir de la lista
+            const destinoVisible = !document.getElementById('step-destino').classList.contains('hidden');
+            if (destinoVisible && !document.getElementById('direccionDestino').value.trim()) {
+                document.getElementById('err-destino').classList.remove('hidden');
+                document.getElementById('step-destino').scrollIntoView({ behavior: 'smooth', block: 'center' });
                 return;
             }
 
@@ -373,7 +546,7 @@
                     comision: 0,
                     costo_compra: costoCompraVal,
                     costo_envio: null,
-                    detalle_servicio: document.getElementById('instruccionesOrigen').value.trim(),
+                    detalle_servicio: instrucciones,
                     detalles_entrega: document.getElementById('detallesEntrega').value.trim(),
                     direccion_destino: document.getElementById('direccionDestino').value.trim(),
                     direccion_origen: document.getElementById('direccionRecogida').value.trim(),
@@ -385,7 +558,7 @@
                     lat_long_origen: (!isNaN(latOrig) && !isNaN(lngOrig)) ? new firebase.firestore.GeoPoint(latOrig, lngOrig) : null,
                     mensajeria_Ref: mensajeriaDocRef,
                     metodo_pago: "Efectivo",
-                    nombre_cliente: document.getElementById('nombreRemitente').value.trim(),
+                    nombre_cliente: nombre,
                     numero_orden: generarNumeroOrden(),
                     porcentaje_comision: null,
                     repartidor_ref: null,
@@ -393,14 +566,14 @@
                     sonidonotificacion: "",
                     status_pedido: "solicitud whatsaap",
                     tarifaMinima: datosMensajeria.tarifaMinima,
-                    telefono_cliente: document.getElementById('telefonoRemitente').value.trim()
+                    telefono_cliente: telefono
                 };
 
                 await servicioDocRef.set(payload);
 
                 Swal.fire({
                     icon: 'success',
-                    title: '¡Solicitud Enviada!',
+                    title: '¡Solicitud enviada!',
                     text: `Tu orden ${payload.numero_orden} fue enviada a la mensajería. En breve asignaremos tu repartidor.`,
                     confirmButtonColor: '#059669'
                 }).then(() => { location.reload(); });
@@ -414,7 +587,7 @@
                     confirmButtonColor: '#059669'
                 });
                 btn.disabled = false;
-                btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i><span>Enviar Solicitud</span>`;
+                btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i><span>Enviar solicitud</span>`;
             }
         });
     </script>
