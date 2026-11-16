@@ -6,7 +6,26 @@
     <title>Solicitar Servicio - Entreguemos</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- API Key de Google Maps -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAzW4soOx6bA4gQFu0qdAI1CFgYj6Ph0j0&libraries=places"></script>
+    <style>
+        /* Estilo y orden para que la lista de Google flote limpia sobre el formulario */
+        .pac-container {
+            z-index: 999999 !important;
+            border-radius: 0.75rem !important;
+            margin-top: 5px !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+            font-family: inherit !important;
+        }
+        .pac-item {
+            padding: 10px !important;
+            cursor: pointer;
+        }
+        .pac-item:hover {
+            background-color: #f0f9ff !important;
+        }
+    </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col justify-between">
 
@@ -52,7 +71,7 @@
             </div>
 
             <!-- FORMULARIO PASO A PASO -->
-            <form id="form-pedido-whatsapp" class="space-y-5 hidden" autocomplete="off">
+            <form id="form-pedido-whatsapp" class="space-y-5 hidden">
                 
                 <!-- PASO 1: NOMBRE -->
                 <div id="step-1" class="space-y-1">
@@ -68,17 +87,16 @@
                         class="w-full p-3.5 rounded-xl bg-slate-50 border border-slate-300 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none">
                 </div>
 
-                <!-- PASO 3: DIRECCIÓN DE ORIGEN -->
-                <div id="step-3" class="space-y-1 hidden relative">
+                <!-- PASO 3: DIRECCIÓN DE ORIGEN (Autocomplete Oficial de Google) -->
+                <div id="step-3" class="space-y-1 hidden">
                     <label id="label-origen" class="block text-xs font-bold text-slate-700">3. ¿A dónde debe ir el repartidor a recoger?</label>
                     <div class="relative">
-                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-sky-600">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-sky-600 z-10">
                             <i class="fa-solid fa-location-dot"></i>
                         </span>
-                        <input type="text" id="direccionRecogida" required placeholder="Ej: Calle 36 # 15-20 Bucaramanga" 
+                        <input type="text" id="direccionRecogida" required placeholder="Escribe la dirección y selecciónala..." 
                             class="w-full p-3.5 pl-10 rounded-xl bg-slate-50 border border-slate-300 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none">
                     </div>
-                    <ul id="sugerencias-origen" class="hidden bg-white border border-slate-200 rounded-xl shadow-lg mt-1 max-h-48 overflow-y-auto divide-y divide-slate-100 text-xs z-40"></ul>
                     <input type="hidden" id="latRecogida">
                     <input type="hidden" id="lngRecogida">
                 </div>
@@ -118,16 +136,15 @@
                 </div>
 
                 <!-- PASO 5: DIRECCIÓN DE DESTINO -->
-                <div id="step-destino" class="space-y-1 hidden relative">
+                <div id="step-destino" class="space-y-1 hidden">
                     <label class="block text-xs font-bold text-slate-700">5. Dirección de destino</label>
                     <div class="relative">
-                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-emerald-600">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-emerald-600 z-10">
                             <i class="fa-solid fa-flag-checkered"></i>
                         </span>
-                        <input type="text" id="direccionDestino" placeholder="Ej: Carrera 27 # 45-10 Cabecera" 
+                        <input type="text" id="direccionDestino" placeholder="Escribe la dirección de entrega y selecciónala..." 
                             class="w-full p-3.5 pl-10 rounded-xl bg-slate-50 border border-slate-300 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none">
                     </div>
-                    <ul id="sugerencias-destino" class="hidden bg-white border border-slate-200 rounded-xl shadow-lg mt-1 max-h-48 overflow-y-auto divide-y divide-slate-100 text-xs z-40"></ul>
                     <input type="hidden" id="latDestino">
                     <input type="hidden" id="lngDestino">
                 </div>
@@ -175,8 +192,6 @@
 
         let datosMensajeria = { fcm_token: "", tarifaMinima: 0 };
         let tipoServicioSeleccionado = 'recoger';
-        let autocompleteService = null;
-        let geocoder = null;
 
         async function cargarDatosMensajeria() {
             if (!mensajeriaId) {
@@ -202,71 +217,49 @@
             }
         }
 
-        function configurarBuscadorDirecciones(inputId, listaId, latId, lngId, onSelectCallback) {
-            const input = document.getElementById(inputId);
-            const lista = document.getElementById(listaId);
-            let timer;
+        // Widget Autocomplete Oficial con truco para evitar cierre de teclado en móviles
+        function initAutocomplete() {
+            const options = { componentRestrictions: { country: 'co' } };
 
-            input.addEventListener('input', function() {
-                clearTimeout(timer);
-                const query = this.value.trim();
-
-                if (query.length < 4) {
-                    lista.classList.add('hidden');
-                    return;
+            const inputRecogida = document.getElementById('direccionRecogida');
+            const autoRecogida = new google.maps.places.Autocomplete(inputRecogida, options);
+            autoRecogida.addListener('place_changed', () => {
+                const place = autoRecogida.getPlace();
+                if (place.geometry) {
+                    document.getElementById('latRecogida').value = place.geometry.location.lat();
+                    document.getElementById('lngRecogida').value = place.geometry.location.lng();
                 }
-
-                timer = setTimeout(() => {
-                    if (!autocompleteService && window.google && google.maps && google.maps.places) {
-                        autocompleteService = new google.maps.places.AutocompleteService();
-                        geocoder = new google.maps.Geocoder();
-                    }
-                    if (!autocompleteService) return;
-
-                    autocompleteService.getPlacePredictions(
-                        { input: query, componentRestrictions: { country: 'co' } },
-                        (predictions, status) => {
-                            if (status !== google.maps.places.PlacesServiceStatus.OK || !predictions) {
-                                lista.classList.add('hidden');
-                                return;
-                            }
-
-                            lista.innerHTML = '';
-                            predictions.slice(0, 4).forEach(pred => {
-                                const li = document.createElement('li');
-                                li.className = 'p-3 hover:bg-sky-50 cursor-pointer flex items-start space-x-2 text-slate-700';
-                                li.innerHTML = `<i class="fa-solid fa-location-dot text-sky-600 mt-0.5"></i><span>${pred.description}</span>`;
-                                
-                                li.addEventListener('click', () => {
-                                    input.value = pred.description;
-                                    lista.classList.add('hidden');
-                                    
-                                    if (geocoder) {
-                                        geocoder.geocode({ placeId: pred.place_id }, (results, geoStatus) => {
-                                            if (geoStatus === 'OK' && results[0]) {
-                                                document.getElementById(latId).value = results[0].geometry.location.lat();
-                                                document.getElementById(lngId).value = results[0].geometry.location.lng();
-                                                if (onSelectCallback) onSelectCallback();
-                                            }
-                                        });
-                                    }
-                                });
-                                lista.appendChild(li);
-                            });
-                            lista.classList.remove('hidden');
-                        }
-                    );
-                }, 350);
             });
+
+            const inputDestino = document.getElementById('direccionDestino');
+            const autoDestino = new google.maps.places.Autocomplete(inputDestino, options);
+            autoDestino.addListener('place_changed', () => {
+                const place = autoDestino.getPlace();
+                if (place.geometry) {
+                    document.getElementById('latDestino').value = place.geometry.location.lat();
+                    document.getElementById('lngDestino').value = place.geometry.location.lng();
+                }
+            });
+
+            // Truco anti-cierre de teclado en móviles para la lista de Google (.pac-container)
+            setTimeout(() => {
+                const observer = new MutationObserver(() => {
+                    const pacContainers = document.querySelectorAll('.pac-container');
+                    pacContainers.forEach(container => {
+                        if (!container.dataset.fixed) {
+                            container.dataset.fixed = "true";
+                            container.addEventListener('mousedown', (e) => e.preventDefault());
+                            container.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+                        }
+                    });
+                });
+                observer.observe(document.body, { childList: true, subtree: true });
+            }, 500);
         }
 
         window.onload = () => {
             cargarDatosMensajeria();
-            // Al seleccionar la dirección de origen, abrimos automáticamente el paso 4
-            configurarBuscadorDirecciones('direccionRecogida', 'sugerencias-origen', 'latRecogida', 'lngRecogida', () => {
-                document.getElementById('step-4').classList.remove('hidden');
-            });
-            configurarBuscadorDirecciones('direccionDestino', 'sugerencias-destino', 'latDestino', 'lngDestino', null);
+            initAutocomplete();
         };
 
         function seleccionarTipo(tipo) {
@@ -327,8 +320,9 @@
         document.getElementById('telefonoRemitente').addEventListener('input', (e) => {
             if (e.target.value.trim().length >= 7) document.getElementById('step-3').classList.remove('hidden');
         });
-
-        // Al escribir en las instrucciones del origen, mostramos los botones de destino
+        document.getElementById('direccionRecogida').addEventListener('input', (e) => {
+            if (e.target.value.trim().length > 5) document.getElementById('step-4').classList.remove('hidden');
+        });
         document.getElementById('instruccionesOrigen').addEventListener('input', (e) => {
             if (e.target.value.trim().length > 3) {
                 if (tipoServicioSeleccionado === 'comprar') {
