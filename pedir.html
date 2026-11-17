@@ -20,7 +20,7 @@
         body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
 
         /* Animación al aparecer cada paso */
-        .paso { animation: aparecer .35s ease both; }
+        .paso { animation: aparecer .35s ease backwards; }
         @keyframes aparecer {
             from { opacity: 0; transform: translateY(10px); }
             to   { opacity: 1; transform: none; }
@@ -76,11 +76,13 @@
         .opt.sel { border-color: #0284c7; background: #f0f9ff; box-shadow: 0 0 0 4px rgba(2,132,199,.10); }
         .opt.sel .oi { background: #0284c7; color: #fff; }
 
-        /* Lista de sugerencias de direcciones */
+        /* Lista de sugerencias de direcciones.
+           Va DENTRO del flujo del formulario (no flotante): empuja hacia abajo lo que sigue,
+           así nunca se monta con otros campos. */
         .sugerencias {
-            position: absolute; left: 0; right: 0; top: calc(100% + 6px); background: #fff; border: 1px solid #e2e8f0;
-            border-radius: 1rem; box-shadow: 0 20px 25px -5px rgba(15,23,42,.15), 0 8px 10px -6px rgba(15,23,42,.1);
-            z-index: 60; overflow: hidden; max-height: 18rem; overflow-y: auto;
+            margin-top: .5rem; background: #fff; border: 1px solid #bae6fd;
+            border-radius: 1rem; box-shadow: 0 8px 20px -8px rgba(2,132,199,.25);
+            overflow: hidden; max-height: 16rem; overflow-y: auto;
         }
         .sug-item {
             display: flex; align-items: center; gap: .75rem; width: 100%; padding: .8rem 1rem; text-align: left;
@@ -168,8 +170,8 @@
                         <i class="fa-solid fa-location-dot icono" style="color:#0284c7"></i>
                         <input type="text" id="direccionRecogidaTxt" autocomplete="off" autocapitalize="off" spellcheck="false"
                                placeholder="Escribe la dirección y elígela de la lista" class="campo">
-                        <div id="lista-recogida" class="sugerencias hidden"></div>
                     </div>
+                    <div id="lista-recogida" class="sugerencias hidden"></div>
                     <p id="err-recogida" class="hidden text-xs text-red-600 font-semibold mt-2"><i class="fa-solid fa-circle-exclamation"></i> Escribe la dirección y selecciónala de la lista.</p>
                     <input type="hidden" id="direccionRecogida">
                     <input type="hidden" id="latRecogida">
@@ -216,8 +218,8 @@
                         <i class="fa-solid fa-flag-checkered icono" style="color:#0369a1"></i>
                         <input type="text" id="direccionDestinoTxt" autocomplete="off" autocapitalize="off" spellcheck="false"
                                placeholder="Escribe la dirección de entrega y elígela de la lista" class="campo">
-                        <div id="lista-destino" class="sugerencias hidden"></div>
                     </div>
+                    <div id="lista-destino" class="sugerencias hidden"></div>
                     <p id="err-destino" class="hidden text-xs text-red-600 font-semibold mt-2"><i class="fa-solid fa-circle-exclamation"></i> Escribe la dirección y selecciónala de la lista.</p>
                     <input type="hidden" id="direccionDestino">
                     <input type="hidden" id="latDestino">
