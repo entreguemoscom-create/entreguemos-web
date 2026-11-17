@@ -13,7 +13,7 @@
     <!-- Google Maps (carga moderna). Reemplaza TU_API_KEY por tu key -->
     <script>
       (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})
-      ({ key: "AIzaSyAzW4soOx6bA4gQFu0qdAIlCFgYj6Ph0j0", v: "weekly" });
+      ({ key: "TU_API_KEY", v: "weekly" });
     </script>
 
     <style>
@@ -194,7 +194,7 @@
                     </div>
                 </div>
 
-                <!-- BOTONES DE OPCIÓN -->
+                <!-- BOTONES DE OPCIÓN (solo para "Recoger y entregar") -->
                 <div id="step-botones-destino" class="paso hidden space-y-3">
                     <p class="text-center text-xs font-bold text-slate-600">¿Cómo deseas continuar?</p>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -211,7 +211,7 @@
 
                 <!-- PASO 5: DIRECCIÓN DE DESTINO -->
                 <div id="step-destino" class="paso hidden">
-                    <label class="etq"><span class="num">5</span><span>Dirección de destino</span></label>
+                    <label class="etq"><span class="num">5</span><span id="label-destino">Dirección de destino</span></label>
                     <div class="cw">
                         <i class="fa-solid fa-flag-checkered icono" style="color:#0369a1"></i>
                         <input type="text" id="direccionDestinoTxt" autocomplete="off" autocapitalize="off" spellcheck="false"
@@ -224,7 +224,7 @@
                     <input type="hidden" id="lngDestino">
                 </div>
 
-                <!-- PASO 6: DETALLES DE LA ENTREGA (solo si llena el destino) -->
+                <!-- PASO 6: DETALLES DE LA ENTREGA -->
                 <div id="step-entrega" class="paso hidden">
                     <label class="etq"><span class="num">6</span><span>Detalles de la entrega al llegar el repartidor</span></label>
                     <div class="cw">
@@ -423,74 +423,108 @@
         };
 
         /* ========================= FLUJO DEL FORMULARIO ========================= */
-        function seleccionarTipo(tipo) {
-            tipoServicioSeleccionado = tipo;
-            document.querySelectorAll('.tipo-btn').forEach(btn => btn.classList.remove('sel'));
-            document.getElementById('btn-tipo-' + tipo).classList.add('sel');
+        const el = (id) => document.getElementById(id);
 
-            document.getElementById('form-pedido-whatsapp').classList.remove('hidden');
+        function limpiarDestino() {
+            el('direccionDestinoTxt').value = "";
+            el('direccionDestino').value = "";
+            el('latDestino').value = "";
+            el('lngDestino').value = "";
+            el('err-destino').classList.add('hidden');
+        }
 
-            if (tipo === 'comprar') {
-                document.getElementById('label-origen').textContent = "¿En qué tienda o dirección debe comprar el repartidor?";
-                document.getElementById('label-detalle-origen').textContent = "¿Qué debe comprar el repartidor?";
-                document.getElementById('instruccionesOrigen').placeholder = "p. ej. 2 cajas de acetaminofén en la droguería...";
-                if (document.getElementById('instruccionesOrigen').value.trim().length > 3) {
-                    document.getElementById('step-compra').classList.remove('hidden');
-                }
+        /* Decide qué se muestra después de las instrucciones del origen:
+           - Comprar algo y llevar: sigue directo con destino, detalles y enviar (sin botones).
+           - Recoger y entregar: muestra los botones de "¿Cómo deseas continuar?". */
+        function actualizarFlujoDestino() {
+            if (el('instruccionesOrigen').value.trim().length <= 3) return;
+
+            if (tipoServicioSeleccionado === 'comprar') {
+                el('step-compra').classList.remove('hidden');
+                el('step-botones-destino').classList.add('hidden');
+                el('step-destino').classList.remove('hidden');
+                el('step-entrega').classList.remove('hidden');
+                el('step-submit').classList.remove('hidden');
             } else {
-                document.getElementById('label-origen').textContent = "¿A dónde debe ir el repartidor a recoger?";
-                document.getElementById('label-detalle-origen').textContent = "¿Qué debe hacer el repartidor en el origen?";
-                document.getElementById('instruccionesOrigen').placeholder = "p. ej. Preguntar por Andrea en recepción...";
-                document.getElementById('step-compra').classList.add('hidden');
-                document.getElementById('costoCompra').value = "";
+                el('step-compra').classList.add('hidden');
+                el('step-botones-destino').classList.remove('hidden');
             }
         }
 
+        function seleccionarTipo(tipo) {
+            const cambioDeTipo = tipo !== tipoServicioSeleccionado;
+            tipoServicioSeleccionado = tipo;
+
+            document.querySelectorAll('.tipo-btn').forEach(btn => btn.classList.remove('sel'));
+            el('btn-tipo-' + tipo).classList.add('sel');
+            el('form-pedido-whatsapp').classList.remove('hidden');
+
+            if (tipo === 'comprar') {
+                el('label-origen').textContent = "¿En qué tienda o dirección debe comprar el repartidor?";
+                el('label-detalle-origen').textContent = "¿Qué debe comprar el repartidor?";
+                el('instruccionesOrigen').placeholder = "p. ej. 2 cajas de acetaminofén en la droguería...";
+                el('label-destino').textContent = "¿A dónde debe llevar la compra el repartidor?";
+
+                // Los botones no se usan en este servicio
+                el('btn-toggle-destino').classList.remove('sel');
+                el('btn-toggle-entrega').classList.remove('sel');
+            } else {
+                el('label-origen').textContent = "¿A dónde debe ir el repartidor a recoger?";
+                el('label-detalle-origen').textContent = "¿Qué debe hacer el repartidor en el origen?";
+                el('instruccionesOrigen').placeholder = "p. ej. Preguntar por Andrea en recepción...";
+                el('label-destino').textContent = "Dirección de destino";
+                el('step-compra').classList.add('hidden');
+                el('costoCompra').value = "";
+
+                // Si venía de "comprar", se vuelve a pedir que elija cómo continuar
+                if (cambioDeTipo) {
+                    el('step-destino').classList.add('hidden');
+                    el('step-entrega').classList.add('hidden');
+                    el('step-submit').classList.add('hidden');
+                    el('btn-toggle-destino').classList.remove('sel');
+                    el('btn-toggle-entrega').classList.remove('sel');
+                    limpiarDestino();
+                    el('detallesEntrega').value = "";
+                }
+            }
+
+            actualizarFlujoDestino();
+        }
+
         function activarOpcion(opcion) {
-            const btnDestino = document.getElementById('btn-toggle-destino');
-            const btnEntrega = document.getElementById('btn-toggle-entrega');
+            const btnDestino = el('btn-toggle-destino');
+            const btnEntrega = el('btn-toggle-entrega');
             btnDestino.classList.remove('sel');
             btnEntrega.classList.remove('sel');
 
             if (opcion === 'destino') {
                 // Llena el destino: se muestran la dirección, los detalles y el botón de enviar
                 btnDestino.classList.add('sel');
-                document.getElementById('step-destino').classList.remove('hidden');
-                document.getElementById('step-entrega').classList.remove('hidden');
-                document.getElementById('step-submit').classList.remove('hidden');
+                el('step-destino').classList.remove('hidden');
+                el('step-entrega').classList.remove('hidden');
+                el('step-submit').classList.remove('hidden');
             } else if (opcion === 'entrega') {
                 // Datos al llegar el repartidor: solo se muestra el botón de enviar
                 btnEntrega.classList.add('sel');
 
-                document.getElementById('step-destino').classList.add('hidden');
-                document.getElementById('direccionDestinoTxt').value = "";
-                document.getElementById('direccionDestino').value = "";
-                document.getElementById('latDestino').value = "";
-                document.getElementById('lngDestino').value = "";
-                document.getElementById('err-destino').classList.add('hidden');
+                el('step-destino').classList.add('hidden');
+                limpiarDestino();
 
-                document.getElementById('step-entrega').classList.add('hidden');
-                document.getElementById('detallesEntrega').value = "";
+                el('step-entrega').classList.add('hidden');
+                el('detallesEntrega').value = "";
 
-                document.getElementById('step-submit').classList.remove('hidden');
-                setTimeout(() => document.getElementById('step-submit').scrollIntoView({ behavior: 'smooth', block: 'center' }), 150);
+                el('step-submit').classList.remove('hidden');
+                setTimeout(() => el('step-submit').scrollIntoView({ behavior: 'smooth', block: 'center' }), 150);
             }
         }
 
-        document.getElementById('nombreRemitente').addEventListener('input', (e) => {
-            if (e.target.value.trim().length > 2) document.getElementById('step-2').classList.remove('hidden');
+        el('nombreRemitente').addEventListener('input', (e) => {
+            if (e.target.value.trim().length > 2) el('step-2').classList.remove('hidden');
         });
-        document.getElementById('telefonoRemitente').addEventListener('input', (e) => {
-            if (e.target.value.trim().length >= 7) document.getElementById('step-3').classList.remove('hidden');
+        el('telefonoRemitente').addEventListener('input', (e) => {
+            if (e.target.value.trim().length >= 7) el('step-3').classList.remove('hidden');
         });
-        document.getElementById('instruccionesOrigen').addEventListener('input', (e) => {
-            if (e.target.value.trim().length > 3) {
-                if (tipoServicioSeleccionado === 'comprar') {
-                    document.getElementById('step-compra').classList.remove('hidden');
-                }
-                document.getElementById('step-botones-destino').classList.remove('hidden');
-            }
-        });
+        el('instruccionesOrigen').addEventListener('input', actualizarFlujoDestino);
 
         function generarIdWhatsapp() {
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -507,34 +541,34 @@
         }
 
         /* ========================= ENVÍO ========================= */
-        document.getElementById('form-pedido-whatsapp').addEventListener('submit', async function(e) {
+        el('form-pedido-whatsapp').addEventListener('submit', async function(e) {
             e.preventDefault();
 
             // Campos de texto obligatorios
-            const nombre = document.getElementById('nombreRemitente').value.trim();
-            const telefono = document.getElementById('telefonoRemitente').value.trim();
-            const instrucciones = document.getElementById('instruccionesOrigen').value.trim();
+            const nombre = el('nombreRemitente').value.trim();
+            const telefono = el('telefonoRemitente').value.trim();
+            const instrucciones = el('instruccionesOrigen').value.trim();
             if (!nombre || !telefono || !instrucciones) {
                 Swal.fire({ icon: 'warning', title: 'Faltan datos', text: 'Completa tu nombre, teléfono y las instrucciones del origen.', confirmButtonColor: '#0284c7' });
                 return;
             }
 
             // La dirección de origen debe venir de la lista (así tenemos las coordenadas)
-            if (!document.getElementById('direccionRecogida').value.trim()) {
-                document.getElementById('err-recogida').classList.remove('hidden');
-                document.getElementById('step-3').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (!el('direccionRecogida').value.trim()) {
+                el('err-recogida').classList.remove('hidden');
+                el('step-3').scrollIntoView({ behavior: 'smooth', block: 'center' });
                 return;
             }
 
-            // Si eligió llenar el destino, también debe venir de la lista
-            const destinoVisible = !document.getElementById('step-destino').classList.contains('hidden');
-            if (destinoVisible && !document.getElementById('direccionDestino').value.trim()) {
-                document.getElementById('err-destino').classList.remove('hidden');
-                document.getElementById('step-destino').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Si el destino está visible (siempre en "comprar"), debe venir de la lista
+            const destinoVisible = !el('step-destino').classList.contains('hidden');
+            if (destinoVisible && !el('direccionDestino').value.trim()) {
+                el('err-destino').classList.remove('hidden');
+                el('step-destino').scrollIntoView({ behavior: 'smooth', block: 'center' });
                 return;
             }
 
-            const btn = document.getElementById('btn-enviar');
+            const btn = el('btn-enviar');
             btn.disabled = true;
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>Enviando solicitud...</span>`;
 
@@ -543,13 +577,13 @@
                 const servicioDocRef = db.collection('servicios').doc(docId);
                 const mensajeriaDocRef = mensajeriaId ? db.collection('mensajeria').doc(mensajeriaId) : null;
 
-                const latOrig = parseFloat(document.getElementById('latRecogida').value);
-                const lngOrig = parseFloat(document.getElementById('lngRecogida').value);
-                const latDest = parseFloat(document.getElementById('latDestino').value);
-                const lngDest = parseFloat(document.getElementById('lngDestino').value);
+                const latOrig = parseFloat(el('latRecogida').value);
+                const lngOrig = parseFloat(el('lngRecogida').value);
+                const latDest = parseFloat(el('latDestino').value);
+                const lngDest = parseFloat(el('lngDestino').value);
 
                 const costoCompraVal = tipoServicioSeleccionado === 'comprar'
-                    ? (Number(document.getElementById('costoCompra').value) || 0)
+                    ? (Number(el('costoCompra').value) || 0)
                     : 0;
 
                 const payload = {
@@ -559,9 +593,9 @@
                     costo_compra: costoCompraVal,
                     costo_envio: 0,
                     detalle_servicio: instrucciones,
-                    detalles_entrega: document.getElementById('detallesEntrega').value.trim(),
-                    direccion_destino: document.getElementById('direccionDestino').value.trim(),
-                    direccion_origen: document.getElementById('direccionRecogida').value.trim(),
+                    detalles_entrega: el('detallesEntrega').value.trim(),
+                    direccion_destino: el('direccionDestino').value.trim(),
+                    direccion_origen: el('direccionRecogida').value.trim(),
                     envio_mas_compra: "0",
                     fcm_token_mensajeria: datosMensajeria.fcm_token,
                     fecha: firebase.firestore.FieldValue.serverTimestamp(),
